@@ -20,6 +20,11 @@ module Whitespace
 
     def compiler
       @s = StringScanner.new(bleach(@src))
+      insns = Array.new
+      until @s.eso?
+        insns.push(step)
+      end
+      insns
     end
 
     private
@@ -57,6 +62,21 @@ module Whitespace
       else
         raise ProgramError, "どの命令にもマッチしませんでした。"
       end
+    end
+
+    def num(str)
+      if str !~ /\A[ \t]+\z/
+        raise ArgumentError, "数値はスペースとタブで指定してください(#{str.inspect})"
+      end
+      str.sub(/\A /, "+")
+        .sub(/\A\t/, "-")
+        .gsub(/ /, "0")
+        .gsub(/\t/, "1")
+        .to_i(2)
+    end
+
+    def label(str)
+      str
     end
   end
 end
