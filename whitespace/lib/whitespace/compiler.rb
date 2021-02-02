@@ -9,8 +9,8 @@ module Whitespace
     class ProgramError < StandardError; end
 
     class << self
-      def compiler(src)
-        new(src).compiler
+      def compile(src)
+        new(src).compile
       end
     end
 
@@ -19,7 +19,7 @@ module Whitespace
       @s = nil
     end
 
-    def compiler
+    def compile
       @s = StringScanner.new(bleach(@src))
       insns = Array.new
       until @s.eos?
