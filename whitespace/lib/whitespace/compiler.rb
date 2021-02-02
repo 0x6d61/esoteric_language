@@ -3,7 +3,7 @@ require "strscan"
 
 module Whitespace
   class Compiler
-    NUM = /[ \t]+\n/
+    NUM = /([ \t]+)\n/
     LABEL = NUM
 
     class ProgramError < StandardError; end
@@ -16,12 +16,13 @@ module Whitespace
 
     def initialize(src)
       @src = src
+      @s = nil
     end
 
     def compiler
       @s = StringScanner.new(bleach(@src))
       insns = Array.new
-      until @s.eso?
+      until @s.eos?
         insns.push(step)
       end
       insns
@@ -79,4 +80,9 @@ module Whitespace
       str
     end
   end
+end
+
+
+if $0 == __FILE__
+  p Whitespace::Compiler.compiler("\s\s\s\t\n\t\n\s\t\n\n\n")
 end
