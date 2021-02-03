@@ -20,6 +20,52 @@ class Starry
         while pc < @insns.size
             insn,arg = *@insns[pc]
             case insn
+            when :push
+                push(arg)
+            when :dup
+                push(@stack[-1])
+            when :swap
+                y,x = pop,pop
+                push(y)
+                push(x)
+            when :rotate
+                z,y,x = pop,pop,pop
+                push(z)
+                push(y)
+                push(x)
+            when :pop
+                pop
+            when :+
+                y,x = pop,pop
+                push(x+y)
+            when :-
+                y,x = pop,pop
+                push(x-y)
+            when :*
+                y,x = pop,pop
+                push(x*y)
+            when :/
+                y,x = pop,pop
+                push(x/y)
+            when :%
+                y,x = pop,pop
+                push(x%y)
+            when :num_out
+                print pop
+            when :char_out
+                print pop.chr
+            when :char_in
+                s = gets.chmop
+                raise ProgamError,"文字列は入力できません" if s.size > 1
+                push(s.ord)
+            when :num_in
+                push(gets.to_i)
+            when :label
+            when :jump
+                if pop != 0
+                    pc = @labels[arg]
+                    raise ProgamError,"ジャンプ先(#{arg.inspect})が見つかりません。"  if pc.nil?
+                end
             else
                 raise "[BUG]しらない命令です(#{insn})"
             end
@@ -42,11 +88,11 @@ class Starry
     end
 
     def pop
-        item = stack.pop
+        item = @stack.pop
         raise ProgamError,"空のスタックをポップしようとしました。" if item.nil?
         item
     end
-    
+
     def parse(src)
         insns = Array.new
         spaces = 0
@@ -68,7 +114,7 @@ class Starry
                 if spaces < OP_STACK.size
                     insns << select(OP_STACK,spaces)
                 else
-                    insns << [:push spaces - OP_STACK.size]
+                    insns << [:push,spaces - OP_STACK.size]
                 end
                 spaces = 0
             when "`"
@@ -84,9 +130,9 @@ class Starry
 
     def find_labels(insns)
         labels = {}
-        insns.each_with_index do |(isn,arg),i|
+        insns.each_with_index do |(insn,arg),i|
             raise ProgamError, "ラベル#{arg}が重複しています。" if labels[arg]
-            if insn = :label
+            if insn == :label
                 labels[arg] = i
             end
         end
