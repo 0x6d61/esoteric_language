@@ -11,12 +11,12 @@ class Bolic
         end
 
         def initialize(src)
-            @src = src.chars.to_a
+            @tokens = src.chars.to_a
             @cur = 0
         end
 
         def parse
-            parse_number
+            parse_additive
         end
 
         private
@@ -27,5 +27,33 @@ class Bolic
             raise ParseError,"数字でないものが来ました(#{c})" unless n
             n
         end
+
+        def parse_additive
+            left = parse_multiple
+            if @tokens[@cur] == "＋"
+                @cur += 1
+                [:+ ,left,parse_additive]
+            elsif @tokens[@cur] == "−"
+                @cur += 1
+                [:- ,left,parse_additive]
+            else
+                left
+            end
+        end
+        
+        def parse_multiple
+            left = parse_number
+            if @tokens[@cur] == "×"
+                @cur+=1
+                [:*,left,parse_multiple]
+            elsif @tokens[@cur] == "÷"
+                @cur += 1
+                [:/,left,parse_multiple]
+            else
+                left
+            end
+        end
     end
 end
+
+p Bolic::Parser.parse(ARGF.read)
